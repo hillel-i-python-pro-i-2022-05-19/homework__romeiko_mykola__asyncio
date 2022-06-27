@@ -1,0 +1,4 @@
+asyncio==3.4.3
+aiohttp==3.8.1
+beautifulsoup4==4.11.1
+urllib3==1.26.9
