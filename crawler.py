@@ -37,7 +37,7 @@ class Crawler:
                 break
             elif not added_urls and len(urls) > self.links_limit:
                 break
-
+        self.target_urls = list(set(self.target_urls))
         return urls
 
     async def get_text_from_url(self, url: T_URL = None) -> T_HTML_TEXT:
@@ -73,19 +73,24 @@ class Crawler:
 
     def write_urls_to_the_file(self, urls: T_URLS):
         parse_url_response = urllib.parse.urlsplit(url=self.target_url)
-        file_name = f'urls_list_from_{parse_url_response[1].replace(".","_")}.csv'
+        file_name = f'results/urls_list_from_{parse_url_response[1].replace(".","_")}.csv'
         with open(file_name, 'w') as file:
             file.write(','.join(urls))
             logging.info(msg=f'{file_name} was written to the disk(current directory).')
 
     async def run(self):
-        self.create_aiohttp_session()
-        result_urls = self.get_urls(await self.get_text_from_url())
-        while self.current_depth_level < self.depth_level and len(result_urls) < self.links_limit:
-            self.current_depth_level += 1
-            html_text_from_urls = await self.get_text_from_urls(self.target_urls)
-            for html_text in html_text_from_urls:
-                result_urls.extend(self.get_urls(text=html_text, added_urls=len(result_urls)))
-        await self._aiohttp_session.close()
-        self.write_urls_to_the_file(urls=result_urls)
-        return result_urls
+        result_urls = []
+        try:
+            self.create_aiohttp_session()
+            result_urls = self.get_urls(await self.get_text_from_url())
+            while self.current_depth_level < self.depth_level and len(result_urls) < self.links_limit:
+                self.current_depth_level += 1
+                html_text_from_urls = await self.get_text_from_urls(self.target_urls)
+                for html_text in html_text_from_urls:
+                    result_urls.extend(self.get_urls(text=html_text, added_urls=len(result_urls)))
+            await self._aiohttp_session.close()
+        except Exception as e:
+            logging.exception(e)
+        finally:
+            self.write_urls_to_the_file(urls=result_urls)
+            return result_urls

@@ -1,5 +1,3 @@
-import logging
-
 from custom_typing import T_URLS
 
 
