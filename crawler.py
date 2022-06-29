@@ -75,6 +75,7 @@ class Crawler:
         parse_url_response = urllib.parse.urlsplit(url=self.target_url)
         file_name = f'results/urls_list_from_{parse_url_response[1].replace(".","_")}.csv'
         with open(file_name, 'w') as file:
+            urls = list(set(urls))
             file.write(','.join(urls))
             logging.info(msg=f'{file_name} was written to the disk(current directory).')
 
